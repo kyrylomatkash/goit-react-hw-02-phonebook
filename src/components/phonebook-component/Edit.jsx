@@ -1,0 +1,61 @@
+// Імпорт
+import React, { useState } from 'react';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+// Функція редагування контакту
+const EditContact = ({ contact, handleSaveEdit, handleClose }) => {
+  const [editedName, setEditedName] = useState(contact.name);
+  const [editedNumber, setEditedNumber] = useState(contact.number);
+  // Збереження відредагованого вмісту
+  const handleSave = () => {
+    const editedContact = {
+      ...contact,
+      name: editedName.trim(),
+      number: editedNumber.trim(),
+    };
+    handleSaveEdit(editedContact);
+  };
+
+  return (
+    <Dialog open={true} onClose={handleClose}>
+      <DialogTitle>Edit Contact</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Edit the details of {contact.name}.
+        </DialogContentText>
+        <TextField
+          label="Name"
+          variant="outlined"
+          value={editedName}
+          onChange={e => setEditedName(e.target.value)}
+          required
+          sx={{ width: '100%', marginBottom: '10px' }}
+        />
+        <TextField
+          label="Number"
+          variant="outlined"
+          type="tel"
+          value={editedNumber}
+          onChange={e => setEditedNumber(e.target.value)}
+          required
+          sx={{ width: '100%', marginBottom: '10px' }}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} color="primary">
+          Cancel
+        </Button>
+        <Button onClick={handleSave} color="primary" autoFocus>
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+// Експорт
+export default EditContact;
