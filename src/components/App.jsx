@@ -57,7 +57,7 @@ const AddButton = styled(Button)`
     }
   }
 `;
-
+// Основна функція застосунку
 const App = () => {
   const [contacts, setContacts] = useState([]);
   const [name, setName] = useState('');
