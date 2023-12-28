@@ -18,6 +18,13 @@ import {
 
 // Функція листу контактів
 class ContactList extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      editContact: null,
+    };
+  }
+
   handleDeleteConfirmationClose = () => {
     this.setState({ editContact: null });
   };
