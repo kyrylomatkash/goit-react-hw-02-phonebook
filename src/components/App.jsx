@@ -1,12 +1,17 @@
-// Імпорт
-import React, { useState } from 'react';
+import React, { Component } from 'react';
 import { nanoid } from 'nanoid';
-import ContactForm from './phonebook-component/ContactForm';
-import ContactList from './phonebook-component/ContactList';
-import EditContact from './phonebook-component/Edit';
-import styled from 'styled-components';
+import ContactForm from './phonebook-component/contact-form/ContactForm';
+import ContactList from './phonebook-component/contact-list/ContactList';
+import EditContact from './phonebook-component/edit-contact/Edit';
+import DeleteConfirmationModal from './phonebook-component/delete-contact/Delete';
 import {
-  Container,
+  AppContainer,
+  Heading,
+  ErrorText,
+  SearchInput,
+  AddButton,
+} from './appstyles';
+import {
   Typography,
   Snackbar,
   Button,
@@ -15,66 +20,45 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Input,
 } from '@mui/material';
 import Alert from '@mui/material/Alert';
-// Стилізація контейнеру і елементів додаку
-const AppContainer = styled(Container)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-`;
 
-const Heading = styled(Typography)`
-  font-size: 28px;
-  margin-bottom: 20px;
-`;
+class App extends Component {
+  state = {
+    contacts: [],
+    name: '',
+    number: '',
+    filter: '',
+    error: '',
+    snackbarOpen: false,
+    snackbarMessage: '',
+    editContact: null,
+    isContactExistsModalOpen: false,
+    isDeleteConfirmationModalOpen: false,
+    contactToDelete: null,
+  };
 
-const ErrorText = styled(Typography)`
-  color: red;
-  font-size: 14px;
-  margin-bottom: 10px;
-`;
+  handleChange = (field, value) => {
+    this.setState({ [field]: value });
+  };
 
-const SearchInput = styled(Input)`
-  && {
-    margin-bottom: 15px;
-    width: 200px;
-  }
-`;
+  addContact = () => {
+    const { contacts, name, number } = this.state;
 
-const AddButton = styled(Button)`
-  && {
-    margin-top: 15px;
-    background-color: #4caf50;
-    color: white;
-    &:hover {
-      background-color: #45a049;
+    if (name.trim() === '' || number.trim() === '') {
+      // Show alert if either name or number is empty
+      this.setState({
+        error: 'Please fill in both name and number.',
+      });
+      return;
     }
-  }
-`;
-// Основна функція застосунку
-const App = () => {
-  const [contacts, setContacts] = useState([]);
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
-  const [filter, setFilter] = useState('');
-  const [error, setError] = useState('');
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [editContact, setEditContact] = useState(null);
-  const [isContactExistsModalOpen, setContactExistsModalOpen] = useState(false);
-  // Додавання контакту
-  const addContact = () => {
+
     const existingContact = contacts.find(
       contact => contact.name.toLowerCase() === name.toLowerCase()
     );
+
     if (existingContact) {
-      setContactExistsModalOpen(true);
+      this.setState({ isContactExistsModalOpen: true });
       return;
     }
 
@@ -84,116 +68,158 @@ const App = () => {
       number: number.trim(),
     };
 
-    if (name.trim() !== '' && number.trim() !== '') {
-      setContacts(prevContacts => [...prevContacts, newContact]);
-      setName('');
-      setNumber('');
-      setError('');
-      setSnackbarMessage('Contact added successfully');
-      setSnackbarOpen(true);
-    }
-  };
-  // Видалення контакту
-  const deleteContact = contactId => {
-    setContacts(prevContacts =>
-      prevContacts.filter(contact => contact.id !== contactId)
-    );
-    setSnackbarMessage('Contact deleted successfully');
-    setSnackbarOpen(true);
-  };
-  // Логіка редагування контакту
-  const handleEditClick = contact => {
-    setEditContact(contact);
+    this.setState(prevState => ({
+      contacts: [...prevState.contacts, newContact],
+      name: '',
+      number: '',
+      error: '',
+      snackbarMessage: 'Contact added successfully',
+      snackbarOpen: true,
+    }));
   };
 
-  const handleSaveEdit = editedContact => {
-    setContacts(prevContacts =>
-      prevContacts.map(contact =>
+  deleteContact = contactId => {
+    this.setState({
+      isDeleteConfirmationModalOpen: true,
+      contactToDelete: contactId,
+    });
+  };
+
+  handleDeleteConfirmation = () => {
+    const { contactToDelete } = this.state;
+    this.setState(prevState => ({
+      contacts: prevState.contacts.filter(
+        contact => contact.id !== contactToDelete
+      ),
+      isDeleteConfirmationModalOpen: false,
+      snackbarMessage: 'Contact deleted successfully',
+      snackbarOpen: true,
+    }));
+  };
+
+  handleCloseDeleteConfirmationModal = () => {
+    this.setState({
+      isDeleteConfirmationModalOpen: false,
+      contactToDelete: null,
+    });
+  };
+
+  handleEditClick = contact => {
+    this.setState({ editContact: contact });
+  };
+
+  handleSaveEdit = editedContact => {
+    this.setState(prevState => ({
+      contacts: prevState.contacts.map(contact =>
         contact.id === editedContact.id ? editedContact : contact
-      )
-    );
-    setEditContact(null);
-    setSnackbarMessage('Contact edited successfully');
-    setSnackbarOpen(true);
+      ),
+      editContact: null,
+      snackbarMessage: 'Contact edited successfully',
+      snackbarOpen: true,
+    }));
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false);
+  handleCloseSnackbar = () => {
+    this.setState({ snackbarOpen: false });
   };
 
-  const handleContactExistsModalClose = () => {
-    setContactExistsModalOpen(false);
+  handleContactExistsModalClose = () => {
+    this.setState({ isContactExistsModalOpen: false });
   };
 
-  return (
-    <AppContainer>
-      <Heading variant="h1">Phonebook</Heading>
-      {error && <ErrorText>{error}</ErrorText>}
-      <ContactForm
-        name={name}
-        setName={setName}
-        number={number}
-        setNumber={setNumber}
-        addContact={addContact}
-      />
-      <Typography variant="h2">Contacts</Typography>
-      <SearchInput
-        type="text"
-        name="filter"
-        value={filter}
-        onChange={e => setFilter(e.target.value)}
-        placeholder="Search contacts..."
-      />
-      <ContactList
-        contacts={contacts}
-        filter={filter}
-        deleteContact={deleteContact}
-        handleEditClick={handleEditClick}
-      />
-      <AddButton
-        variant="contained"
-        onClick={addContact}
-        disabled={name.trim() === '' || number.trim() === ''}
-      >
-        Add Contact
-      </AddButton>
+  render() {
+    const {
+      contacts,
+      name,
+      number,
+      filter,
+      error,
+      snackbarOpen,
+      snackbarMessage,
+      editContact,
+      isContactExistsModalOpen,
+      isDeleteConfirmationModalOpen,
+    } = this.state;
 
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert onClose={handleCloseSnackbar} severity="success">
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-
-      {editContact && (
-        <EditContact
-          contact={editContact}
-          handleSaveEdit={handleSaveEdit}
-          handleClose={() => setEditContact(null)}
+    return (
+      <AppContainer>
+        <Heading variant="h1">Phonebook</Heading>
+        {error && <ErrorText>{error}</ErrorText>}
+        <ContactForm
+          name={name}
+          setName={newName => this.handleChange('name', newName)}
+          number={number}
+          setNumber={newNumber => this.handleChange('number', newNumber)}
+          addContact={this.addContact}
         />
-      )}
+        <Typography variant="h2">Contacts</Typography>
+        <SearchInput
+          type="text"
+          name="filter"
+          value={filter}
+          onChange={e => this.handleChange('filter', e.target.value)}
+          placeholder="Search contacts..."
+        />
+        <ContactList
+          contacts={contacts}
+          filter={filter}
+          deleteContact={this.deleteContact}
+          handleEditClick={this.handleEditClick}
+        />
+        <AddButton
+          variant="contained"
+          onClick={this.addContact}
+          disabled={name.trim() === '' || number.trim() === ''}
+        >
+          Add Contact
+        </AddButton>
 
-      <Dialog
-        open={isContactExistsModalOpen}
-        onClose={handleContactExistsModalClose}
-      >
-        <DialogTitle>Contact Exists</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            A contact with the name <strong>{name}</strong> already exists.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleContactExistsModalClose} color="primary">
-            OK
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </AppContainer>
-  );
-};
-// Експорт
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={3000}
+          onClose={this.handleCloseSnackbar}
+        >
+          <Alert onClose={this.handleCloseSnackbar} severity="success">
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+
+        {editContact && (
+          <EditContact
+            contact={editContact}
+            handleSaveEdit={this.handleSaveEdit}
+            handleClose={() => this.setState({ editContact: null })}
+          />
+        )}
+
+        <DeleteConfirmationModal
+          open={isDeleteConfirmationModalOpen}
+          handleClose={this.handleCloseDeleteConfirmationModal}
+          handleConfirmation={this.handleDeleteConfirmation}
+        />
+
+        <Dialog
+          open={isContactExistsModalOpen}
+          onClose={this.handleContactExistsModalClose}
+        >
+          <DialogTitle>Contact Exists</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              A contact with the name <strong>{name}</strong> already exists.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleContactExistsModalClose}
+              color="primary"
+            >
+              OK
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </AppContainer>
+    );
+  }
+}
+
 export default App;
