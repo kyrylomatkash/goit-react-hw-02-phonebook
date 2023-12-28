@@ -9,14 +9,10 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 // Основний клас застосунку
 class EditContact extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      editedName: props.contact.name,
-      editedNumber: props.contact.number,
-    };
-  }
+  state = {
+    editedName: this.props.contact.name,
+    editedNumber: this.props.contact.number,
+  };
 
   handleNameChange = e => {
     this.setState({ editedName: e.target.value });

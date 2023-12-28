@@ -2,24 +2,14 @@
 import React, { Component } from 'react';
 import { nanoid } from 'nanoid';
 // Імпорт стилів
-import {
-  StyledForm,
-  StyledTextField,
-  AlertContainer,
-} from './contactformstyles';
-import Alert from '@mui/material/Alert';
+import { StyledForm, StyledTextField } from './contactformstyles';
 // Основний клас застосунку
 class ContactForm extends Component {
-  state = {
-    showAlert: false,
-  };
-
   handleAddContact = e => {
     e.preventDefault();
     const { name, number, addContact } = this.props;
 
     if (name.trim() === '' || number.trim() === '') {
-      this.setState({ showAlert: true });
       return;
     }
 
@@ -28,16 +18,10 @@ class ContactForm extends Component {
       name: name.trim(),
       number: number.trim(),
     });
-    this.setState({ showAlert: false });
-  };
-
-  handleCloseAlert = () => {
-    this.setState({ showAlert: false });
   };
   // Рендер
   render() {
     const { name, setName, number, setNumber } = this.props;
-    const { showAlert } = this.state;
 
     return (
       <StyledForm onSubmit={this.handleAddContact}>
@@ -58,13 +42,6 @@ class ContactForm extends Component {
           onChange={e => setNumber(e.target.value)}
           required
         />
-        {showAlert && (
-          <AlertContainer>
-            <Alert severity="error" onClose={this.handleCloseAlert}>
-              Please fill in both name and number.
-            </Alert>
-          </AlertContainer>
-        )}
       </StyledForm>
     );
   }

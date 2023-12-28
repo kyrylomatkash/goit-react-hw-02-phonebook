@@ -11,15 +11,10 @@ export const StyledTextField = styled(TextField)`
   margin-bottom: 15px;
 
   &:hover {
-    background-color: #f0f0f0; // Light background on hover
+    background-color: #f0f0f0;
   }
 
   &:focus {
-    border-color: #2196f3; // Highlight border on focus
+    border-color: #2196f3;
   }
-`;
-
-export const AlertContainer = styled('div')`
-  margin: 10px 0;
-  background-color: #ffcccc;
 `;
