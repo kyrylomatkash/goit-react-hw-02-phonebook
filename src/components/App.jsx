@@ -26,7 +26,7 @@ import {
 } from './appstyles';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Основний клас застосунку
+// Головний клас застосунку
 class App extends Component {
   state = {
     contacts: [],
